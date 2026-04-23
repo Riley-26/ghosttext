@@ -1,8 +1,0 @@
-hotkey_accept: tab
-model: qwen2.5:1.5b
-temperature: 0.3
-max_tokens: 15
-is_running: true
-ollama_url: http://localhost:11434
-context_limit: 500
-profile_path: config/profile.md
