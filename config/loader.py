@@ -4,8 +4,9 @@ from pathlib import Path
 
 # -- Defaults 
 DEFAULTS = {
-    "hotkey_accept":  "ctrl+alt+space",
-    "model":          "qwen2.5:1.5b",
+    "hotkey_accept":  "tab",
+    "hotkey_cancel":  "esc",
+    "model":          "gemma4",
     "temperature":    0.3,
     "max_tokens":     15,
     "is_running":     True,
@@ -67,3 +68,5 @@ def load_profile(config: dict) -> str:
     print(f"[config] Profile loaded ({len(content)} chars)")
     return content
 
+if __name__ == "__main__":
+    load_config()

@@ -12,6 +12,7 @@ current_suggestion = ""
 overlay = None
 is_running = True
 
+
 def create_suggestion():
     """Called after the user is idle for a second."""
     global current_suggestion
@@ -34,21 +35,34 @@ def create_suggestion():
     current_suggestion = suggestion
     overlay.show(suggestion)
 
-def on_accept():
+
+def accept_sug():
     """Called when the user presses the accept hotkey."""
     global current_suggestion
 
     if not current_suggestion or not is_running:
         return
 
-    # small delay so overlay hides before injection
+    # Small delay so overlay hides before injection
     threading.Timer(0.05, inject_suggestion).start()
 
-def inject_suggestion():
+
+def cancel_sug():
+    """Called when the user presses the cancel hotkey."""
     global current_suggestion
+    
+    current_suggestion = ""
+    overlay.show("")
+
+
+def inject_suggestion():
     from injector import inject
+    global current_suggestion
+
     inject(current_suggestion)
     current_suggestion = ""
+    overlay.show("")
+
 
 def on_toggle(running: bool):
     """Called when the user toggles run/pause from the tray."""
@@ -56,6 +70,7 @@ def on_toggle(running: bool):
     is_running = running
     if not running:
         overlay.hide()
+
 
 # -- Runner
 def main():
@@ -68,11 +83,15 @@ def main():
     overlay_thread = threading.Thread(target=overlay.run, daemon=True)
     overlay_thread.start()
 
+    overlay.show("")
+
     hotkey_thread = threading.Thread(
         target=run_key_handler,
         args=(
             config["hotkey_accept"],
-            on_accept,
+            config["hotkey_cancel"],
+            accept_sug,
+            cancel_sug,
             create_suggestion
         ),
         daemon=True
