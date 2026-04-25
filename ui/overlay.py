@@ -1,10 +1,15 @@
 import tkinter as tk
 import threading
+from config.loader import load_config
+from injector import inject
+
+config = load_config("config/config.yaml")
 
 class Overlay:
     def __init__(self):
         self.root = None
         self.label = None
+        self.model_info = None
         self._ready = threading.Event()
         self._drag_x = 0
         self._drag_y = 0
@@ -16,27 +21,42 @@ class Overlay:
         self.root.attributes("-topmost", True)
         self.root.attributes("-alpha", 0.92)
         self.root.configure(bg="#1e1e1e")
+        self.root.maxsize(900, 9999)
         self.root.withdraw()
+
+        self.model_info = tk.Label(
+            self.root,
+            text=f"Current model: {config['model']}",
+            font=("Segoe UI", 11),
+            fg="#a0a0a0",
+            bg="#1e1e1e",
+            padx=4,
+            pady=8,
+        )
+        self.model_info.pack(anchor="w", padx=4, pady=(8, 8))
 
         self.label = tk.Label(
             self.root,
             text="",
             font=("Segoe UI", 13),
-            fg="#a0a0a0",
+            fg="#dddddd",
             bg="#1e1e1e",
-            padx=14,
+            padx=2,
             pady=8,
+            wraplength=860,
+            justify="left",
         )
-        self.label.pack()
+        self.label.pack(anchor="w", padx=4, pady=(8, 8))
 
-        # ── drag bindings ─────────────────────────────────────────
-        self.label.bind("<ButtonPress-1>",   self._on_drag_start)
-        self.label.bind("<B1-Motion>",       self._on_drag_motion)
+        # -- drag bindings (bind every widget so the whole overlay is draggable)
+        for widget in (self.root, self.model_info, self.label):
+            widget.bind("<ButtonPress-1>", self._on_drag_start)
+            widget.bind("<B1-Motion>",     self._on_drag_motion)
 
         self._ready.set()
         self.root.mainloop()
 
-    # ── drag handlers ─────────────────────────────────────────────
+    # -- drag handlers 
     def _on_drag_start(self, event):
         """Record where the mouse clicked relative to the window."""
         self._drag_x = event.x
@@ -48,7 +68,7 @@ class Overlay:
         y = self.root.winfo_y() + (event.y - self._drag_y)
         self.root.geometry(f"+{x}+{y}")
 
-    # ── position ──────────────────────────────────────────────────
+    # -- position 
     def _position_window(self):
         """Default position — bottom right. Only used on first show."""
         self.root.update_idletasks()
@@ -63,12 +83,12 @@ class Overlay:
 
         self.root.geometry(f"+{x}+{y}")
 
-    # ── show / hide ───────────────────────────────────────────────
+    # -- show / hide 
     def show(self, suggestion: str):
         self._ready.wait()
 
         def _show():
-            self.label.config(text=f"  {suggestion}  ")
+            self.label.config(text=f"{suggestion}")
 
             # only auto-position on first show
             # after that, stay where the user dragged it
