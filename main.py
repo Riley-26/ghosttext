@@ -3,15 +3,14 @@ import yaml
 import keyboard
 from config.loader import load_config
 from context.reader import get_context
-from inference.ollama import get_llm_response
-from key_listener import run_key_handler
+from inference.llm import get_llm_response
+from key_listener import run_key_handler, suppress_key
 from ui.tray import Tray
 from ui.overlay import Overlay
 
 current_suggestion = ""
 overlay = None
 is_running = True
-
 
 def create_suggestion():
     """Called after the user is idle for a second."""
@@ -33,6 +32,7 @@ def create_suggestion():
     # 3. store and show in overlay
     print(suggestion)
     current_suggestion = suggestion
+    suppress_key()
     overlay.show(suggestion)
 
 
@@ -83,7 +83,7 @@ def main():
     overlay_thread = threading.Thread(target=overlay.run, daemon=True)
     overlay_thread.start()
 
-    overlay.show("")
+    overlay.show("Start typing to generate a suggestion")
 
     hotkey_thread = threading.Thread(
         target=run_key_handler,
